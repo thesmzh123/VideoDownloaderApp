@@ -18,7 +18,7 @@
         app:hide_on_touch="true"
         app:use_controller="true"
         app:controller_layout_id="@layout/exo_playback_control_view"/>
- 
+
 
 
     <ProgressBar
