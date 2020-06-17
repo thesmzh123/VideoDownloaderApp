@@ -1,12 +1,10 @@
 package com.video.downloading.app.downloader.online.app.fragments
 
 import android.annotation.SuppressLint
-import android.app.DownloadManager
 import android.content.*
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.net.Uri
 import android.net.http.SslCertificate
 import android.net.http.SslError
 import android.os.*
@@ -38,10 +36,8 @@ import com.video.downloading.app.downloader.online.app.models.DailymotionLink
 import com.video.downloading.app.downloader.online.app.models.VideoDownload
 import com.video.downloading.app.downloader.online.app.models.Websites
 import com.video.downloading.app.downloader.online.app.utils.*
-import com.video.downloading.app.downloader.online.app.utils.Constants.DOWNLOAD_PATH
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import kotlinx.android.synthetic.main.fragment_home.view.*
-import java.io.File
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 
@@ -69,7 +65,6 @@ class HomeFragment : BaseFragment() {
     private var videoContentSearch: VideoContentSearch? = null
     private var isStopThread: Boolean = false
 
-    private val downloadedList = ArrayList<String>()
 
     @SuppressLint("StaticFieldLeak")
     override fun onCreateView(
@@ -304,42 +299,8 @@ class HomeFragment : BaseFragment() {
 
     }
 
-    private fun startDownload(link: String?, name: String?) {
-        try {
-            val request =
-                DownloadManager.Request(Uri.parse(link))
-            request.allowScanningByMediaScanner()
-            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            val file = File(DOWNLOAD_PATH)
-            if (!file.exists()) {
-                file.mkdirs()
-            }
-            val path =
-                Uri.withAppendedPath(Uri.fromFile(file), "$name.mp4")
-            request.setDestinationUri(path)
-            requireActivity()
-            val dm = requireActivity()
-                .getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val urldownloadFragmentList: ArrayList<String> = vIdeoList()
-            if (urldownloadFragmentList.contains(link)) {
-                showToast(getString(R.string.video_is_already_downloading))
-            } else {
-                urldownloadFragmentList.add(link.toString())
-                dm.enqueue(request)
-                showToast(
-                    "Downloading video in the background. Check the " +
-                            "notification for progress"
-                )
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
-    fun vIdeoList(): ArrayList<String> {
-        return downloadedList
-    }
+
 
     private fun showNoResourceDialog() {
 
