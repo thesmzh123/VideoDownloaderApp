@@ -56,4 +56,8 @@
     <string name="date_and_time">Date and Time</string>
     <string name="path">Path</string>
     <string name="paste_link">Paste Link</string>
+    <string name="how_to_download">How to download?</string>
+    <string name="download_link_text">All Video Downloader is a fast and free way for downloading and saving videos. Start by putting the any video URL in the box below and click download Button</string>
+    <string name="paste_your_video_link_here">Paste your video link here</string>
+    <string name="download_">Download</string>
 </resources>
