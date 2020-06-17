@@ -60,4 +60,6 @@
     <string name="download_link_text">All Video Downloader is a fast and free way for downloading and saving videos. Start by putting the any video URL in the box below and click download Button</string>
     <string name="paste_your_video_link_here">Paste your video link here</string>
     <string name="download_">Download</string>
+    <string name="fill_the_field">Please fill the field</string>
+    <string name="valid_url">Please enter a valid url</string>
 </resources>
