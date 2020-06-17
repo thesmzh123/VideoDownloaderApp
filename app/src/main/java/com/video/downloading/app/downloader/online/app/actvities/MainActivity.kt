@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_home,
+                R.id.navigation_paste_link,
                 R.id.navigation_dashboard
             )
         )
