@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--test ads-->
+    <string name="app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="interstial">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="banner">ca-app-pub-3940256099942544/6300978111</string>
+
+    <string-array name="videourl_filters">
+        <item>mp4</item>
+        <item>video</item>
+        <item>googleusercontent</item>
+        <item>embed</item>
+    </string-array>
+</resources>
