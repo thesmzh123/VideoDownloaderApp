@@ -40,7 +40,7 @@ class DownloadFragment : BaseFragment() {
             downloadFileList!!.add(DownloadFile(recordingUri, fileName))
         }
         //creating our adapter
-        val adapter = DownloadFileAdapter(requireActivity(), downloadFileList!!)
+        val adapter = DownloadFileAdapter(requireActivity(), downloadFileList!!,this@DownloadFragment)
 
         //now adding the adapter to recyclerview
         root!!.recyclerView.adapter = adapter
@@ -48,7 +48,7 @@ class DownloadFragment : BaseFragment() {
         return root!!
     }
 
-    private fun checkEmptyState() {
+     fun checkEmptyState() {
         if (downloadFileList!!.isEmpty()) {
             root!!.recyclerView.visibility = View.GONE
             root!!.emptyView.visibility = View.VISIBLE

@@ -108,6 +108,15 @@
             android:theme="@style/AppThemeNoTitle"
             android:screenOrientation="portrait"
             />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.video.downloading.app.downloader.online.app.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_path" />
+        </provider>
     </application>
 
 </manifest>
