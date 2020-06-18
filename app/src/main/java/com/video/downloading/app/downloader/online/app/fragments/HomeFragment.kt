@@ -1,7 +1,6 @@
 package com.video.downloading.app.downloader.online.app.fragments
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.*
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.res.ColorStateList
