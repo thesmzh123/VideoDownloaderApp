@@ -95,6 +95,10 @@ class PasteLinkFragment : BaseFragment() {
                 } else if (urlText!!.text.toString().contains("https://www.instagram.com")) {
                     instagramLink()
                 }
+                else{
+                    showDialog(getString(R.string.generate_download_link))
+                    xGetter!!.find(urlText!!.text.toString())
+                }
             } else {
                 showToast(getString(R.string.no_internet))
             }
@@ -250,7 +254,6 @@ class PasteLinkFragment : BaseFragment() {
                 hideDialog()
 
                 downloadVideo("Facebook-$rnds", FbFile.url)
-                //Complate
             }
 
             override fun onExtractionFail(Error: String) {
