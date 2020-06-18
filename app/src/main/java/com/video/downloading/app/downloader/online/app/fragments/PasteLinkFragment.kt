@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import com.find.lost.app.phone.utils.InternetConnection
 import com.google.android.material.textfield.TextInputEditText
 import com.video.downloading.app.downloader.online.app.R
 import kotlinx.android.synthetic.main.fragment_paste_link.view.*
@@ -21,8 +22,12 @@ class PasteLinkFragment : BaseFragment() {
         root!!.downloadBtn.setOnClickListener {
             if (urlText!!.text!!.isEmpty()) {
                 showToast(getString(R.string.fill_the_field))
-            } else if (!URLUtil.isValidUrl(urlText!!.text.toString())){
-                showToast(getString(R.string.valid_url))
+            } else if (InternetConnection().checkConnection(requireActivity())) {
+                if (!URLUtil.isValidUrl(urlText!!.text.toString())) {
+                    showToast(getString(R.string.valid_url))
+                }
+            } else {
+                showToast(getString(R.string.no_internet))
             }
         }
         return root!!

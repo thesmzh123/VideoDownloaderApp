@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
+import com.find.lost.app.phone.utils.InternetConnection
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.adapters.BookmarkAdapter
@@ -43,9 +44,12 @@ class BookmarkFragment : BaseFragment() {
                 object : ClickListener {
                     override fun onClick(view: View?, position: Int) {
                         val websites = bookmarkList!![position]
-                        val bundle = bundleOf("webAddress" to websites.address)
-                        findNavController().navigate(R.id.navigation_home, bundle)
-
+                        if (InternetConnection().checkConnection(requireActivity())) {
+                            val bundle = bundleOf("webAddress" to websites.address)
+                            findNavController().navigate(R.id.navigation_home, bundle)
+                        } else {
+                            showToast(getString(R.string.no_internet))
+                        }
 
                     }
 

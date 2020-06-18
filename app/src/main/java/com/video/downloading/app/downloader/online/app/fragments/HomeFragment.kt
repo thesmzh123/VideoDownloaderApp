@@ -26,6 +26,7 @@ import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.charizardtech.social.media.downloader.app.utils.VideoContentSearch
+import com.find.lost.app.phone.utils.InternetConnection
 import com.find.your.phone.app.utils.PermissionsUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -140,7 +141,11 @@ class HomeFragment : BaseFragment() {
                 object : ClickListener {
                     override fun onClick(view: View?, position: Int) {
                         val websites = websiteList!![position]
-                        loadAllWebsites(websites)
+                        if (InternetConnection().checkConnection(requireActivity())) {
+                            loadAllWebsites(websites)
+                        } else {
+                            showToast(getString(R.string.no_internet))
+                        }
                     }
 
                     override fun onLongClick(view: View?, position: Int) {
@@ -155,44 +160,48 @@ class HomeFragment : BaseFragment() {
         }
 
         root!!.fab.setOnClickListener {
-            when {
-                videoDownloadList.isNullOrEmpty() -> {
-                    root!!.fab.clearAnimation()
-                    showNoResourceDialog()
-                }
-                webview!!.url.contains("https://vimeo.com/") -> {
-                    showDialog(getString(R.string.generate_download_link))
-                    viemoLink = ViemoDownloadLink().getVideoLink(webview!!.url)
-                    hideDialog()
-                    downloadVideo()
-                    Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
-                    root!!.fab.clearAnimation()
-                }
-                webview!!.url.contains("https://www.dailymotion.com/") -> {
-                    DailyMotionDownloadLink(
-                        webview!!.url,
-                        requireActivity(), this@HomeFragment
-                    ).execute()
+            if (InternetConnection().checkConnection(requireActivity())) {
+                when {
+                    videoDownloadList.isNullOrEmpty() -> {
+                        root!!.fab.clearAnimation()
+                        showNoResourceDialog()
+                    }
+                    webview!!.url.contains("https://vimeo.com/") -> {
+                        showDialog(getString(R.string.generate_download_link))
+                        viemoLink = ViemoDownloadLink().getVideoLink(webview!!.url)
+                        hideDialog()
+                        downloadVideo()
+                        Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
+                        root!!.fab.clearAnimation()
+                    }
+                    webview!!.url.contains("https://www.dailymotion.com/") -> {
+                        DailyMotionDownloadLink(
+                            webview!!.url,
+                            requireActivity(), this@HomeFragment
+                        ).execute()
 
-                    Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
-                    root!!.fab.clearAnimation()
+                        Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
+                        root!!.fab.clearAnimation()
+                    }
+                    webview!!.url.contains("https://mobile.twitter.com/") -> {
+
+
+                    }
+                    webview!!.url.contains("https://m.youtube.com/") -> {
+                        root!!.fab.clearAnimation()
+                        youtubeRestrictionDialog()
+
+                    }
+
+                    else -> {
+
+                        downloadVideo()
+                        Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
+                        root!!.fab.clearAnimation()
+                    }
                 }
-                webview!!.url.contains("https://mobile.twitter.com/") -> {
-
-
-                }
-                webview!!.url.contains("https://m.youtube.com/") -> {
-                    root!!.fab.clearAnimation()
-                    youtubeRestrictionDialog()
-
-                }
-
-                else -> {
-
-                    downloadVideo()
-                    Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
-                    root!!.fab.clearAnimation()
-                }
+            } else {
+                showToast(getString(R.string.no_internet))
             }
         }
         root!!.fab.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.colorBtn))
@@ -298,8 +307,6 @@ class HomeFragment : BaseFragment() {
             .show()
 
     }
-
-
 
 
     private fun showNoResourceDialog() {
@@ -833,7 +840,11 @@ class HomeFragment : BaseFragment() {
 
             val rnds = (0..100).random()
             webview!!.post {
-                startDownload(finalUrl, "Facebook_$rnds")
+                if (InternetConnection().checkConnection(requireActivity())) {
+                    startDownload(finalUrl, "Facebook_$rnds")
+                } else {
+                    showToast(getString(R.string.no_internet))
+                }
             }
             dialog?.dismiss()
         }
@@ -842,10 +853,13 @@ class HomeFragment : BaseFragment() {
         alertDialog.setNegativeButton(
             getString(R.string.watch)
         ) { dialog: DialogInterface?, which: Int ->
-
-            val intent = Intent(activity, VideoPlayActivity::class.java)
-            intent.putExtra("videofilename", finalurl)
-            startActivity(intent)
+            if (InternetConnection().checkConnection(requireActivity())) {
+                val intent = Intent(activity, VideoPlayActivity::class.java)
+                intent.putExtra("videofilename", finalurl)
+                startActivity(intent)
+            } else {
+                showToast(getString(R.string.no_internet))
+            }
         }
         alertDialog.setNeutralButton(
             getString(R.string.copy_link)

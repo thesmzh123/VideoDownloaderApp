@@ -62,4 +62,6 @@
     <string name="download_">Download</string>
     <string name="fill_the_field">Please fill the field</string>
     <string name="valid_url">Please enter a valid url</string>
+    <string name="no_internet">No Internet Connection</string>
+
 </resources>
