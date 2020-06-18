@@ -30,6 +30,9 @@ import com.find.lost.app.phone.utils.InternetConnection
 import com.find.your.phone.app.utils.PermissionsUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.htetznaing.lowcostvideo.LowCostVideo
+import com.htetznaing.lowcostvideo.LowCostVideo.OnTaskCompleted
+import com.htetznaing.lowcostvideo.Model.XModel
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.actvities.VideoPlayActivity
 import com.video.downloading.app.downloader.online.app.adapters.WebsiteAdapter
@@ -55,6 +58,7 @@ class HomeFragment : BaseFragment() {
     private var linked: String? = null
     private var viemoLink: String? = null
     private var twitterLink: String? = null
+    private var twitterLink1: String? = null
 
     private var spacing = 30 // 50px
 
@@ -65,7 +69,8 @@ class HomeFragment : BaseFragment() {
     private var anim: Animation? = null
     private var videoContentSearch: VideoContentSearch? = null
     private var isStopThread: Boolean = false
-
+    private var xGetter: LowCostVideo? = null
+    private var rnds: Int = 0
 
     @SuppressLint("StaticFieldLeak")
     override fun onCreateView(
@@ -80,7 +85,7 @@ class HomeFragment : BaseFragment() {
         videoDownloadList = ArrayList()
         defaultSSLSF = HttpsURLConnection.getDefaultSSLSocketFactory()
 
-
+        rnds = (0..100).random()
 
         urlSearch = root!!.findViewById(R.id.urlSearch)
         webview = root!!.findViewById(R.id.webView)
@@ -188,8 +193,10 @@ class HomeFragment : BaseFragment() {
                         root!!.fab.clearAnimation()
                     }
                     webview!!.url.contains("https://mobile.twitter.com/") -> {
-
-
+                        val split: Array<String> =
+                            twitterLink!!.split("\\?".toRegex()).toTypedArray()
+                        showDialog(getString(R.string.generate_download_link))
+                        xGetter!!.find(split[0])
                     }
                     webview!!.url.contains("https://m.youtube.com/") -> {
                         root!!.fab.clearAnimation()
@@ -222,6 +229,25 @@ class HomeFragment : BaseFragment() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         CookieSyncManager.getInstance().startSync()
+
+        xGetter = LowCostVideo(requireActivity())
+        xGetter!!.onFinish(object : OnTaskCompleted {
+            override fun onTaskCompleted(
+                vidURL: ArrayList<XModel>,
+                multiple_quality: Boolean
+            ) {
+                hideDialog()
+                if (multiple_quality) {
+                    twitterLink1 = vidURL[0].url
+                    downloadVideo()
+                }
+            }
+
+            override fun onError() {
+                //Error
+                hideDialog()
+            }
+        })
         return root!!
     }
 
@@ -267,6 +293,9 @@ class HomeFragment : BaseFragment() {
                                 when {
                                     webview!!.url.contains("https://vimeo.com/") -> {
                                         startDownload(viemoLink, finalName)
+                                    }
+                                    webview!!.url.contains("https://mobile.twitter.com") -> {
+                                        startDownload(twitterLink1, "Twitter_"+rnds)
                                     }
                                     webview!!.url.contains("https://www.dailymotion.com/") -> {
                                         val dailyMotionDownloadLink = DailymotionLink.getInstance()
@@ -619,77 +648,81 @@ class HomeFragment : BaseFragment() {
                                         chunked: Boolean,
                                         website: String?
                                     ) {
-                                        requireActivity()
-                                            .runOnUiThread {
+                                        try {
+                                            requireActivity()
+                                                .runOnUiThread {
 
-                                                if (page != null) {
-                                                    when {
-                                                        page.contains("https://mobile.twitter.com") -> {
-                                                            val clipBoard =
-                                                                requireActivity().getSystemService(
-                                                                    CLIPBOARD_SERVICE
-                                                                ) as ClipboardManager
-                                                            clipBoard.addPrimaryClipChangedListener {
-                                                                val clipData = clipBoard.primaryClip
-                                                                val item = clipData!!.getItemAt(0)
-                                                                val text = item.text.toString()
-                                                                Log.d(TAGI, "twitter: $text")
-                                                                if (text.contains("https://twitter.com/"))
-                                                                    twitterLink = text
-                                                                requireActivity()
-                                                                    .runOnUiThread {
-                                                                        root!!.fab.backgroundTintList =
-                                                                            ColorStateList.valueOf(
-                                                                                resources.getColor(
-                                                                                    R.color.colorButton
+                                                    if (page != null) {
+                                                        when {
+                                                            page.contains("https://mobile.twitter.com") -> {
+                                                                val clipBoard =
+                                                                    requireActivity().getSystemService(
+                                                                        CLIPBOARD_SERVICE
+                                                                    ) as ClipboardManager
+                                                                clipBoard.addPrimaryClipChangedListener {
+                                                                    val clipData = clipBoard.primaryClip
+                                                                    val item = clipData!!.getItemAt(0)
+                                                                    val text = item.text.toString()
+                                                                    Log.d(TAGI, "twitter: $text")
+                                                                    if (text.contains("https://twitter.com/"))
+                                                                        twitterLink = text
+                                                                    requireActivity()
+                                                                        .runOnUiThread {
+                                                                            root!!.fab.backgroundTintList =
+                                                                                ColorStateList.valueOf(
+                                                                                    resources.getColor(
+                                                                                        R.color.colorButton
+                                                                                    )
                                                                                 )
+                                                                            root!!.fab.clearAnimation()
+                                                                            root!!.fab.startAnimation(
+                                                                                anim
                                                                             )
-                                                                        root!!.fab.clearAnimation()
-                                                                        root!!.fab.startAnimation(
-                                                                            anim
-                                                                        )
-                                                                    }
-                                                                // Access your context here using YourActivityName.this
+                                                                        }
+                                                                    // Access your context here using YourActivityName.this
+                                                                }
                                                             }
-                                                        }
-                                                        page.contains("https://m.youtube.com/") -> {
-                                                            root!!.fab.backgroundTintList =
-                                                                ColorStateList.valueOf(
-                                                                    resources.getColor(
-                                                                        R.color.colorButton
+                                                            page.contains("https://m.youtube.com/") -> {
+                                                                root!!.fab.backgroundTintList =
+                                                                    ColorStateList.valueOf(
+                                                                        resources.getColor(
+                                                                            R.color.colorButton
+                                                                        )
                                                                     )
-                                                                )
-                                                            root!!.fab.clearAnimation()
-                                                        }
-                                                        else -> {
-                                                            root!!.fab.backgroundTintList =
-                                                                ColorStateList.valueOf(
-                                                                    resources.getColor(
-                                                                        R.color.colorButton
+                                                                root!!.fab.clearAnimation()
+                                                            }
+                                                            else -> {
+                                                                root!!.fab.backgroundTintList =
+                                                                    ColorStateList.valueOf(
+                                                                        resources.getColor(
+                                                                            R.color.colorButton
+                                                                        )
                                                                     )
-                                                                )
-                                                            root!!.fab.clearAnimation()
-                                                            root!!.fab.startAnimation(anim)
+                                                                root!!.fab.clearAnimation()
+                                                                root!!.fab.startAnimation(anim)
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        videoDownloadList!!.clear()
-                                        Log.d(
-                                            TAGI,
-                                            "onVideoFound: $size,$type,$link,$name,$page,$chunked,$website"
-                                        )
-                                        videoDownloadList!!.add(
-                                            VideoDownload(
-                                                size.toString(),
-                                                type.toString(),
-                                                link.toString(),
-                                                name.toString(),
-                                                page.toString(),
-                                                chunked,
-                                                website.toString()
+                                            videoDownloadList!!.clear()
+                                            Log.d(
+                                                TAGI,
+                                                "onVideoFound: $size,$type,$link,$name,$page,$chunked,$website"
                                             )
-                                        )
+                                            videoDownloadList!!.add(
+                                                VideoDownload(
+                                                    size.toString(),
+                                                    type.toString(),
+                                                    link.toString(),
+                                                    name.toString(),
+                                                    page.toString(),
+                                                    chunked,
+                                                    website.toString()
+                                                )
+                                            )
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
 
                                     }
 
@@ -854,7 +887,7 @@ class HomeFragment : BaseFragment() {
             getString(R.string.yes)
         ) { dialog: DialogInterface?, which: Int ->
 
-            val rnds = (0..100).random()
+
             webview!!.post {
                 if (InternetConnection().checkConnection(requireActivity())) {
                     startDownload(finalUrl, "Facebook_$rnds")
