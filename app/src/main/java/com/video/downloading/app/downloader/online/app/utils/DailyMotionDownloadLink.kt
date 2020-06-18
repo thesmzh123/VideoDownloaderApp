@@ -14,6 +14,7 @@ import com.android.volley.toolbox.Volley
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.fragments.HomeFragment
+import com.video.downloading.app.downloader.online.app.fragments.PasteLinkFragment
 import com.video.downloading.app.downloader.online.app.models.DailymotionLink
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import kotlinx.android.synthetic.main.layout_loading_dialog.view.*
@@ -25,7 +26,9 @@ import org.jsoup.select.Elements
 class DailyMotionDownloadLink(
     stringUrl: String,
     val context: Context,
-    private val homeFragment: HomeFragment
+    private val homeFragment: HomeFragment,
+    private val isHome: Boolean,
+    private val pasteLinkFragment: PasteLinkFragment
 ) :
     AsyncTask<Any, Int, Any>() {
     private var dailyMotionDownloadLink: String? = null
@@ -36,6 +39,7 @@ class DailyMotionDownloadLink(
     private var element: Elements? = null
     private var requestQueue: RequestQueue? = null
     private var dialog: AlertDialog? = null
+    private var rnds: Int = 0
 
 
     init {
@@ -43,6 +47,8 @@ class DailyMotionDownloadLink(
         HttpsTrustManager().allowAllSSL()
         requestQueue = Volley.newRequestQueue(context)
         dailymotionLink = DailymotionLink.getInstance()
+        rnds = (0..100).random()
+
     }
 
     override fun onPreExecute() {
@@ -61,8 +67,7 @@ class DailyMotionDownloadLink(
                 sb.append("?autoplay=1")
 
 
-                document = Jsoup.connect(sb.toString()).ignoreHttpErrors(true)
-                    .validateTLSCertificates(false).get()
+                document = Jsoup.connect(sb.toString()).ignoreHttpErrors(true).get()
 
                 element = document!!.getElementsByTag("script")
 
@@ -148,8 +153,16 @@ class DailyMotionDownloadLink(
     override fun onPostExecute(result: Any?) {
         super.onPostExecute(result)
         hideDialog()
-        homeFragment.downloadVideo()
-
+        try {
+            if (isHome) {
+                homeFragment.downloadVideo()
+            } else {
+                pasteLinkFragment.downloadVideo("Dailymotion_$rnds",dailymotionLink!!.downloadUrl)
+                dailymotionLink!!.downloadUrl = ""
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     //TODO: show dialog

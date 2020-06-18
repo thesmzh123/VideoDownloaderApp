@@ -175,9 +175,13 @@ class HomeFragment : BaseFragment() {
                         root!!.fab.clearAnimation()
                     }
                     webview!!.url.contains("https://www.dailymotion.com/") -> {
+                        val pasteLinkFragment = PasteLinkFragment()
                         DailyMotionDownloadLink(
                             webview!!.url,
-                            requireActivity(), this@HomeFragment
+                            requireActivity(),
+                            this@HomeFragment,
+                            true,
+                            pasteLinkFragment
                         ).execute()
 
                         Log.d(TAGI, "onClick: " + videoDownloadList!!.size)
@@ -285,10 +289,22 @@ class HomeFragment : BaseFragment() {
                             }
                         }
                     } else {
-                        if (webview!!.url.contains("https://vimeo.com/")) {
-                            startDownload(viemoLink, finalName)
-                        } else {
-                            startDownload(linked, finalName)
+                        when {
+                            webview!!.url.contains("https://vimeo.com/") -> {
+                                startDownload(viemoLink, finalName)
+                            }
+                            webview!!.url.contains("https://www.dailymotion.com/") -> {
+                                val dailyMotionDownloadLink = DailymotionLink.getInstance()
+
+                                startDownload(
+                                    dailyMotionDownloadLink.downloadUrl,
+                                    finalName
+                                )
+                                dailyMotionDownloadLink.downloadUrl = ""
+                            }
+                            else -> {
+                                startDownload(linked, finalName)
+                            }
                         }
 //                        downloadStart()
                     }
