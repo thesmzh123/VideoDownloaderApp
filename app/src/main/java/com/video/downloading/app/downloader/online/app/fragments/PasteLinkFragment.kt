@@ -9,22 +9,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import com.android.volley.*
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.ashudevs.facebookurlextractor.FacebookExtractor
 import com.ashudevs.facebookurlextractor.FacebookFile
 import com.find.lost.app.phone.utils.InternetConnection
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.htetznaing.lowcostvideo.LowCostVideo
+import com.htetznaing.lowcostvideo.Model.XModel
 import com.video.downloading.app.downloader.online.app.R
+import com.video.downloading.app.downloader.online.app.utils.Constants.INSTA_LINK
+import com.video.downloading.app.downloader.online.app.utils.Constants.QUERY
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import com.video.downloading.app.downloader.online.app.utils.DailyMotionDownloadLink
 import com.video.downloading.app.downloader.online.app.utils.ViemoDownloadLink
 import kotlinx.android.synthetic.main.fragment_paste_link.view.*
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PasteLinkFragment : BaseFragment() {
     private var urlText: TextInputEditText? = null
     private var xGetter: LowCostVideo? = null
-    private var rnds: Int = 0
+    private var rnds: String? = null
+
+    @SuppressLint("SimpleDateFormat")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -32,7 +45,10 @@ class PasteLinkFragment : BaseFragment() {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_paste_link, container, false)
         urlText = root!!.videoUrl
-        rnds = (0..100).random()
+//        rnds = (0..100).random()
+        val sdf = SimpleDateFormat("dd_M_yyyy hh_mm_ss")
+        val currentDate = sdf.format(Date())
+        rnds = "Dated_$currentDate"
 
         root!!.downloadBtn.setOnClickListener {
             if (urlText!!.text!!.isEmpty()) {
@@ -45,7 +61,7 @@ class PasteLinkFragment : BaseFragment() {
                     showDialog(getString(R.string.generate_download_link))
                     handler.postDelayed({
                         hideDialog()
-                        downloadVideo("Facebook_" + rnds, urlText!!.text.toString())
+                        downloadVideo("Facebook_$rnds", urlText!!.text.toString())
                     }, 3000)
                 } else if (urlText!!.text.toString().contains("https://www.facebook.com/")) {
                     extractFbDownloadLink()
@@ -64,14 +80,130 @@ class PasteLinkFragment : BaseFragment() {
                     showDialog(getString(R.string.generate_download_link))
                     val viemoLink = ViemoDownloadLink().getVideoLink(urlText!!.text.toString())
                     hideDialog()
-                    downloadVideo("Vimeo_"+rnds, viemoLink.toString())
+                    downloadVideo("Vimeo_$rnds", viemoLink.toString())
+                } else if (urlText!!.text.toString().contains("https://twitter.com")) {
+                    if (urlText!!.text.toString().contains("\\?")) {
+                        val split: Array<String> =
+                            urlText!!.text.toString().split("\\?".toRegex()).toTypedArray()
+                        showDialog(getString(R.string.generate_download_link))
+                        xGetter!!.find(split[0])
+                    } else {
+                        showDialog(getString(R.string.generate_download_link))
+                        xGetter!!.find(urlText!!.text.toString())
+                    }
+
+                } else if (urlText!!.text.toString().contains("https://www.instagram.com")) {
+                    instagramLink()
                 }
             } else {
                 showToast(getString(R.string.no_internet))
             }
             urlText!!.text?.clear()
         }
+
+        xGetter = LowCostVideo(requireActivity())
+        xGetter!!.onFinish(object : LowCostVideo.OnTaskCompleted {
+            override fun onTaskCompleted(
+                vidURL: ArrayList<XModel>,
+                multiple_quality: Boolean
+            ) {
+                hideDialog()
+                if (multiple_quality) {
+
+                    downloadVideo(rnds.toString(), vidURL[0].url)
+                }
+            }
+
+            override fun onError() {
+                //Error
+                hideDialog()
+            }
+        })
         return root!!
+    }
+
+    private fun instagramLink() {
+        showDialog(getString(R.string.generate_download_link))
+        val splitter: Array<String> =
+            urlText!!.text.toString().split("/".toRegex()).toTypedArray()
+        val pathvideo = INSTA_LINK + splitter[4] + "/" + QUERY
+        val requestQueue =
+            Volley.newRequestQueue(requireActivity())
+        val stringRequest =
+            StringRequest(
+                Request.Method.GET, pathvideo,
+                Response.Listener { response: String? ->
+                    Log.d(TAGI, response!!)
+                    try {
+                        val jsonObject2 = JSONObject(response)
+                        Log.d(
+                            TAGI,
+                            "onResponse: " + jsonObject2.getString("graphql")
+                        )
+                        val respone1 = jsonObject2.getString("graphql")
+                        val `object` = JSONObject(respone1)
+                        parseJson(`object`)
+                        hideDialog()
+                    } catch (e: Exception) {
+                        hideDialog()
+                        e.printStackTrace()
+                        Log.d(TAGI, "onResponse: " + e.message)
+                    }
+                },
+                Response.ErrorListener { error: VolleyError ->
+                    hideDialog()
+                    error.printStackTrace()
+                    Log.d(TAGI, "onErrorResponse: " + error.message)
+                }
+            )
+
+
+        val socketTimeout = 10000
+        val policy: RetryPolicy = DefaultRetryPolicy(
+            socketTimeout,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+        stringRequest.retryPolicy = policy
+        requestQueue.add(stringRequest)
+    }
+
+    @Throws(JSONException::class)
+    private fun parseJson(data: JSONObject?) {
+        try {
+            if (data != null) {
+                val it = data.keys()
+                while (it.hasNext()) {
+                    val key = it.next()
+                    try {
+                        when {
+                            data[key] is JSONArray -> {
+                                val arry = data.getJSONArray(key)
+                                val size = arry.length()
+                                for (i in 0 until size) {
+                                    parseJson(arry.getJSONObject(i))
+                                }
+                            }
+                            data[key] is JSONObject -> {
+                                parseJson(data.getJSONObject(key))
+                            }
+                            else -> {
+                                println("" + key + " : " + data.optString(key))
+
+
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        println("" + key + " : " + data.optString(key))
+                        e.printStackTrace()
+                    }
+                }
+                Log.d(TAGI, "parseJson: " + data.getString("video_url"))
+                downloadVideo("Instagram_$rnds", data.getString("video_url"))
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun downloadVideo(name: String, url: String) {
@@ -117,14 +249,14 @@ class PasteLinkFragment : BaseFragment() {
                 )
                 hideDialog()
 
-                downloadVideo("Facebook-" + rnds, FbFile.url)
+                downloadVideo("Facebook-$rnds", FbFile.url)
                 //Complate
             }
 
             override fun onExtractionFail(Error: String) {
                 //Fail
                 hideDialog()
-                Log.d(TAGI, "fb error: " + Error)
+                Log.d(TAGI, "fb error: $Error")
             }
         }.Extractor(activity, urlText!!.text.toString())
     }
