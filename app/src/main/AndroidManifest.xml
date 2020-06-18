@@ -24,6 +24,11 @@
         tools:ignore="AllowBackup"
         tools:targetApi="q">
         <activity
+            android:name=".actvities.AlternateVideoPlayerActivity"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/AppThemeNoTitle" />
+        <activity
             android:name=".actvities.SplashScreenActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
@@ -42,7 +47,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
@@ -80,12 +84,14 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/app_id" />
+
         <receiver android:name=".receiver.DownloadReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
                 <action android:name="android.intent.action.ACTION_VIEW_DOWNLOADS" />
             </intent-filter>
         </receiver>
+
         <activity
             android:name=".actvities.OtherVideosPlayer"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
@@ -103,11 +109,12 @@
                 <data android:scheme="file" />
             </intent-filter>
         </activity>
-        <activity android:name=".actvities.VideoPlayActivity"
+        <activity
+            android:name=".actvities.VideoPlayActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppThemeNoTitle"
             android:screenOrientation="portrait"
-            />
+            android:theme="@style/AppThemeNoTitle" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.video.downloading.app.downloader.online.app.provider"

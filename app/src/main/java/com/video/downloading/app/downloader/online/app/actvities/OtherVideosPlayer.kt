@@ -1,13 +1,14 @@
+@file:Suppress("DEPRECATION")
+
 package com.video.downloading.app.downloader.online.app.actvities
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.view.TextureView
 import android.view.View
 import android.view.WindowManager
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayerFactory
@@ -29,13 +30,13 @@ import com.video.downloading.app.downloader.online.app.utils.PlayerEventListener
 import com.video.downloading.app.downloader.online.app.utils.VideoEventListener
 import com.video.downloading.app.downloader.online.app.utils.ZoomableExoPlayerView
 
+@Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class OtherVideosPlayer : Activity(), Player.EventListener {
-    var textureView: TextureView? = null
-    var hlsVideoUri: String? = null
+    private var textureView: TextureView? = null
+    private var hlsVideoUri: String? = null
     private lateinit var simpleExoPlayerView: ZoomableExoPlayerView
     private lateinit var player: SimpleExoPlayer
     private lateinit var progressBar: ProgressBar
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,11 +80,11 @@ class OtherVideosPlayer : Activity(), Player.EventListener {
                 )
 
             val uri = Uri.parse(hlsVideoUri)
-            val mainHandler = Handler()
-        /*    val mediaSource: MediaSource = HlsMediaSource(
-                uri,
-                dataSourceFactory, mainHandler, null
-            )*/
+//            val mainHandler = Handler()
+            /*    val mediaSource: MediaSource = HlsMediaSource(
+                    uri,
+                    dataSourceFactory, mainHandler, null
+                )*/
             val mediaSource: MediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
                 .setExtractorsFactory(DefaultExtractorsFactory())
                 .createMediaSource(uri)
@@ -99,7 +100,9 @@ class OtherVideosPlayer : Activity(), Player.EventListener {
         }
     }
 
-
+    override fun onBackPressed() {
+        finish()
+    }
 
     override fun onTracksChanged(
         trackGroups: TrackGroupArray,
@@ -137,10 +140,14 @@ class OtherVideosPlayer : Activity(), Player.EventListener {
     override fun onPlayerError(error: ExoPlaybackException) {
         val adb =
             MaterialAlertDialogBuilder(this@OtherVideosPlayer)
-        adb.setTitle("Could not able to stream video")
-        adb.setMessage("It seems that something is going wrong.\nPlease try again.")
+        adb.setTitle("Could not able to play video")
+        adb.setMessage("It seems that something is going wrong.\nPlease try alternate player by clicking Ok.")
         adb.setCancelable(false)
         adb.setPositiveButton("OK") { dialog, which ->
+            val intent = Intent(this@OtherVideosPlayer, AlternateVideoPlayerActivity::class.java)
+            intent.putExtra("path", hlsVideoUri)
+            startActivity(intent)
+            finish()
             dialog.dismiss()
         }
         val ad = adb.create()
@@ -151,10 +158,6 @@ class OtherVideosPlayer : Activity(), Player.EventListener {
         super.onPause()
         player.playWhenReady = false
         simpleExoPlayerView.keepScreenOn = false
-    }
-
-    override fun onResume() {
-        super.onResume()
     }
 
     override fun onDestroy() {
