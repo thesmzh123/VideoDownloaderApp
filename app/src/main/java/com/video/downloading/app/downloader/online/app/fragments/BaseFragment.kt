@@ -225,6 +225,8 @@ open class BaseFragment : Fragment() {
         deleteDialog.setCancelable(false)
         if (isTwitter) {
             deleteDialogView.gif1.visibility = View.VISIBLE
+        } else {
+            deleteDialogView.gif2.visibility = View.VISIBLE
         }
         deleteDialog.setButton(
             AlertDialog.BUTTON_POSITIVE,

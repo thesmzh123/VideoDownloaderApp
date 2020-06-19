@@ -58,7 +58,6 @@
             </FrameLayout>
 
             <RelativeLayout
-                android:id="@+id/mainClick"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
@@ -67,7 +66,6 @@
 
 
                 <LinearLayout
-                    android:id="@+id/playCLick"
                     android:layout_width="@dimen/_200sdp"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"

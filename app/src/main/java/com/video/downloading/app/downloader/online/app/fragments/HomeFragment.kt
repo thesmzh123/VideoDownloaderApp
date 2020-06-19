@@ -5,6 +5,7 @@ import android.content.*
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.net.Uri
 import android.net.http.SslCertificate
 import android.net.http.SslError
 import android.os.*
@@ -74,7 +75,7 @@ class HomeFragment : BaseFragment() {
     private var videoContentSearch: VideoContentSearch? = null
     private var isStopThread: Boolean = false
     private var xGetter: LowCostVideo? = null
-    private var rnds: String?=null
+    private var rnds: String? = null
 
     @SuppressLint("StaticFieldLeak", "SimpleDateFormat")
     override fun onCreateView(
@@ -505,12 +506,39 @@ class HomeFragment : BaseFragment() {
                         urlSearch?.text = Editable.Factory.getInstance().newEditable("")
                         findNavController().navigate(R.id.navigation_home)
                     } else {
-                        requireActivity().finishAffinity()
+                        exit()
                     }
                 }
             }
         requireActivity().onBackPressedDispatcher.addCallback(this, callback)
 
+    }
+
+    private fun exit() {
+        val yesNoDialog =
+            MaterialAlertDialogBuilder(
+                requireActivity()
+            )
+        //yes or no alert box
+        yesNoDialog.setMessage(getString(R.string.do_you_want_exit)).setCancelable(false)
+            .setNegativeButton(
+                getString(R.string.rate_us)
+            ) { dialog: DialogInterface?, which: Int ->
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=" + requireActivity().packageName)
+                    )
+                )
+            }
+            .setPositiveButton(
+                getString(R.string.exit)
+            ) { dialogInterface: DialogInterface?, i: Int -> requireActivity().finishAffinity() }
+            .setNeutralButton(
+                getString(R.string.cancel)
+            ) { dialogInterface: DialogInterface, i: Int -> dialogInterface.dismiss() }
+        val dialog = yesNoDialog.create()
+        dialog.show()
     }
 
     private fun loadAllWebsites(websites: Websites) {
@@ -608,8 +636,8 @@ class HomeFragment : BaseFragment() {
                 // Don't use the argument url here since navigation to that URL might have been
                 // cancelled due to SSL error
 
-                if (view.url.contains("https://mobile.twitter.com")){
-                    if (!SharedPrefUtils.getBooleanData(requireActivity(),"isTwitter")){
+                if (view.url.contains("https://mobile.twitter.com")) {
+                    if (!SharedPrefUtils.getBooleanData(requireActivity(), "isTwitter")) {
                         guideDialog(true)
                     }
                 }
@@ -619,6 +647,9 @@ class HomeFragment : BaseFragment() {
                     handler.postDelayed({
                         webview!!.loadUrl(JavascriptNotation.value)
                     }, 3000)
+                    if (!SharedPrefUtils.getBooleanData(requireActivity(), "isFacebook")) {
+                        guideDialog(false)
+                    }
                 }
             }
 
@@ -884,12 +915,12 @@ class HomeFragment : BaseFragment() {
     private fun websiteList(): ArrayList<Websites> {
         websiteList?.add(Websites(R.drawable.fb, getString(R.string.facebook)))
         websiteList?.add(Websites(R.drawable.instagram, getString(R.string.instagram)))
-        websiteList?.add(Websites(R.drawable.soundcloud, getString(R.string.soundcloud)))
+//        websiteList?.add(Websites(R.drawable.soundcloud, getString(R.string.soundcloud)))
         websiteList?.add(Websites(R.drawable.vimeo, getString(R.string.vimeo)))
         websiteList?.add(Websites(R.drawable.dailymotion, getString(R.string.dailymotion)))
         websiteList?.add(Websites(R.drawable.twitter, getString(R.string.twitter)))
-        websiteList?.add(Websites(R.drawable.vevo, getString(R.string.vevo)))
-        websiteList?.add(Websites(R.drawable.metcafe, getString(R.string.metcafe)))
+//        websiteList?.add(Websites(R.drawable.vevo, getString(R.string.vevo)))
+//        websiteList?.add(Websites(R.drawable.metcafe, getString(R.string.metcafe)))
         websiteList?.add(Websites(R.drawable.twitch, getString(R.string.twitch)))
         return websiteList!!
     }

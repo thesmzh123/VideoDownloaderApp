@@ -56,32 +56,38 @@ class PasteLinkFragment : BaseFragment() {
         rnds = "Dated_$currentDate"
 
         root!!.downloadBtn.setOnClickListener {
-            if (urlText!!.text!!.isEmpty()) {
-                showToast(getString(R.string.fill_the_field))
-            } else if (InternetConnection().checkConnection(requireActivity())) {
-                if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
-                    if (interstitial.isLoaded) {
-                        if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                            interstitial.show()
-                        } else {
-                            Log.d(TAGI, "App Is In Background Ad Is Not Going To Show")
-
-                        }
-                    } else {
-                        fetchDownloadLink()
-                    }
-                    interstitial.adListener = object : AdListener() {
-                        override fun onAdClosed() {
-                            requestNewInterstitial()
-                            fetchDownloadLink()
-                        }
-                    }
-                } else {
-                    fetchDownloadLink()
+            when {
+                urlText!!.text!!.isEmpty() -> {
+                    showToast(getString(R.string.fill_the_field))
                 }
+                InternetConnection().checkConnection(requireActivity()) -> {
+                    /*            if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                                        if (interstitial.isLoaded) {
+                                            if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                                                interstitial.show()
+                                            } else {
+                                                Log.d(TAGI, "App Is In Background Ad Is Not Going To Show")
 
-            } else {
-                showToast(getString(R.string.no_internet))
+                                            }
+                                        } else {
+                                            fetchDownloadLink()
+                                        }
+                                        interstitial.adListener = object : AdListener() {
+                                            override fun onAdClosed() {
+                                                requestNewInterstitial()
+                                                fetchDownloadLink()
+                                            }
+                                        }
+                                    } else {
+                                        fetchDownloadLink()
+                                    }
+                    */
+                    fetchDownloadLink()
+
+                }
+                else -> {
+                    showToast(getString(R.string.no_internet))
+                }
             }
 
         }
@@ -102,6 +108,7 @@ class PasteLinkFragment : BaseFragment() {
             override fun onError() {
                 //Error
                 hideDialog()
+                showToast(getString(R.string.please_check_video_url_link))
             }
         })
 

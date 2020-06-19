@@ -1,5 +1,6 @@
 package com.video.downloading.app.downloader.online.app.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -16,6 +17,7 @@ import java.io.File
 
 @Suppress("DEPRECATION")
 class DownloadFragment : BaseFragment() {
+    private var root1: File? = null
     private var downloadFileList: ArrayList<DownloadFile>? = null
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,34 +26,40 @@ class DownloadFragment : BaseFragment() {
     ): View? {
         root = inflater.inflate(R.layout.fragment_download, container, false)
         downloadFileList = ArrayList()
-        try {
-            val root1 = Environment.getExternalStorageDirectory()
-            val path = root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/"
-            Log.d(TAGI, "Path: $path")
-            val directory = File(path)
-            val files = directory.listFiles()!!
-            Log.d(TAGI, "Size: " + files.size)
 
-            for (file in files) {
-                Log.d(TAGI, "FileName:" + file.name)
-                val fileName = file.name
-                val recordingUri =
-                    root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/" + fileName
-                downloadFileList!!.add(DownloadFile(recordingUri, fileName))
-            }
-            //creating our adapter
-            val adapter = DownloadFileAdapter(requireActivity(), downloadFileList!!,this@DownloadFragment)
+        root1 = if (Build.VERSION.SDK_INT >= 29) {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
-            //now adding the adapter to recyclerview
-            root!!.recyclerView.adapter = adapter
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } else {
+
+            Environment.getExternalStorageDirectory()
+
         }
+        val path = root1!!.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/"
+        Log.d(TAGI, "Path: $path")
+        val directory = File(path)
+        val files = directory.listFiles()!!
+        Log.d(TAGI, "Size: " + files.size)
+
+        for (file in files) {
+            Log.d(TAGI, "FileName:" + file.name)
+            val fileName = file.name
+            val recordingUri =
+                root1!!.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/" + fileName
+            downloadFileList!!.add(DownloadFile(recordingUri, fileName))
+        }
+        //creating our adapter
+        val adapter =
+            DownloadFileAdapter(requireActivity(), downloadFileList!!, this@DownloadFragment)
+
+        //now adding the adapter to recyclerview
+        root!!.recyclerView.adapter = adapter
         checkEmptyState()
         return root!!
     }
 
-     fun checkEmptyState() {
+
+    fun checkEmptyState() {
         if (downloadFileList!!.isEmpty()) {
             root!!.recyclerView.visibility = View.GONE
             root!!.emptyView.visibility = View.VISIBLE
