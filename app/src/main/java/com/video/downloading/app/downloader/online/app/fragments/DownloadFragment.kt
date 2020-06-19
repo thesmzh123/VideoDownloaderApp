@@ -24,26 +24,29 @@ class DownloadFragment : BaseFragment() {
     ): View? {
         root = inflater.inflate(R.layout.fragment_download, container, false)
         downloadFileList = ArrayList()
+        try {
+            val root1 = Environment.getExternalStorageDirectory()
+            val path = root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/"
+            Log.d(TAGI, "Path: $path")
+            val directory = File(path)
+            val files = directory.listFiles()!!
+            Log.d(TAGI, "Size: " + files.size)
 
-        val root1 = Environment.getExternalStorageDirectory()
-        val path = root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/"
-        Log.d(TAGI, "Path: $path")
-        val directory = File(path)
-        val files = directory.listFiles()!!
-        Log.d(TAGI, "Size: " + files.size)
+            for (file in files) {
+                Log.d(TAGI, "FileName:" + file.name)
+                val fileName = file.name
+                val recordingUri =
+                    root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/" + fileName
+                downloadFileList!!.add(DownloadFile(recordingUri, fileName))
+            }
+            //creating our adapter
+            val adapter = DownloadFileAdapter(requireActivity(), downloadFileList!!,this@DownloadFragment)
 
-        for (file in files) {
-            Log.d(TAGI, "FileName:" + file.name)
-            val fileName = file.name
-            val recordingUri =
-                root1.absolutePath + "/" + DOWNLOAD_DIRECTORY + "/" + fileName
-            downloadFileList!!.add(DownloadFile(recordingUri, fileName))
+            //now adding the adapter to recyclerview
+            root!!.recyclerView.adapter = adapter
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        //creating our adapter
-        val adapter = DownloadFileAdapter(requireActivity(), downloadFileList!!,this@DownloadFragment)
-
-        //now adding the adapter to recyclerview
-        root!!.recyclerView.adapter = adapter
         checkEmptyState()
         return root!!
     }

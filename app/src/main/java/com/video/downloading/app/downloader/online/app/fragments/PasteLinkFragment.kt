@@ -83,7 +83,7 @@ class PasteLinkFragment : BaseFragment() {
             } else {
                 showToast(getString(R.string.no_internet))
             }
-            urlText!!.text?.clear()
+
         }
 
         xGetter = LowCostVideo(requireActivity())
@@ -236,7 +236,7 @@ class PasteLinkFragment : BaseFragment() {
                 Log.d(TAGI, "parseJson: " + data.getString("video_url"))
                 downloadVideo("Instagram_$rnds", data.getString("video_url"))
             }
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -246,7 +246,7 @@ class PasteLinkFragment : BaseFragment() {
             DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
-
+                        urlText!!.text?.clear()
                         if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
                             hideDialog()
                             if (interstitial.isLoaded) {
@@ -276,9 +276,13 @@ class PasteLinkFragment : BaseFragment() {
                     }
 
 
-                    DialogInterface.BUTTON_NEGATIVE ->
+                    DialogInterface.BUTTON_NEGATIVE -> {
                         //Yes button clicked
                         dialog.dismiss()
+
+                        urlText!!.text?.clear()
+                    }
+
                 }
             }
 

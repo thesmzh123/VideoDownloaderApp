@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +20,7 @@ import com.google.android.gms.ads.InterstitialAd
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.utils.Constants
+import com.video.downloading.app.downloader.online.app.utils.Constants.DOWNLOAD_PATH
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import com.video.downloading.app.downloader.online.app.utils.DatabaseHelper
 import kotlinx.android.synthetic.main.layout_loading_dialog.view.*
@@ -123,18 +126,32 @@ open class BaseFragment : Fragment() {
     }
 
     fun startDownload(link: String?, name: String?) {
+        if (Build.VERSION.SDK_INT >= 29) {
+            downloadVideoInQ(link, name)
+        } else {
+            downloadVideoInOther(link, name)
+        }
+    }
+
+    private fun downloadVideoInOther(link: String?, name: String?) {
         try {
             val request =
                 DownloadManager.Request(Uri.parse(link))
             request.allowScanningByMediaScanner()
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            val file = File(Constants.DOWNLOAD_PATH)
+            val file = File(DOWNLOAD_PATH)
             if (!file.exists()) {
                 file.mkdirs()
             }
             val path =
                 Uri.withAppendedPath(Uri.fromFile(file), "$name.mp4")
+//            if (Build.VERSION.SDK_INT >= 29) {
+//                request.setDestinationInExternalPublicDir(DOWNLOAD_PATH,"$name.mp4")
+//                request.setDestinationUri(Uri.parse("file://" + file.absoluteFile + "/" + "$name.mp4"));
+            /* } else {
+
+             }*/
             request.setDestinationUri(path)
             requireActivity()
             val dm = requireActivity()
@@ -154,6 +171,46 @@ open class BaseFragment : Fragment() {
             e.printStackTrace()
         }
     }
+
+    private fun downloadVideoInQ(link: String?, name: String?) {
+        try {
+            val direct = File(requireActivity().getExternalFilesDir(null), "/VideoDownloaderApp1")
+
+            if (!direct.exists()) {
+                direct.mkdirs()
+            }
+
+            val mgr =
+                requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+            val downloadUri = Uri.parse(link)
+            val request = DownloadManager.Request(
+                downloadUri
+            )
+
+            request.setAllowedNetworkTypes(
+                DownloadManager.Request.NETWORK_WIFI or
+                        DownloadManager.Request.NETWORK_MOBILE
+            )
+                .setAllowedOverRoaming(false).setTitle(name) //Download Manager Title
+                .setDescription("Downloading...")
+                .setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS,
+                    "/VideoDownloaderApp1/$name.mp4"  //Your User define(Non Standard Directory name)/File Name
+                )
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(true)
+            showToast(
+                "Downloading video in the background. Check the " +
+                        "notification for progress"
+            )
+            mgr.enqueue(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+    }
+
 
     fun vIdeoList(): ArrayList<String> {
         return downloadedList
