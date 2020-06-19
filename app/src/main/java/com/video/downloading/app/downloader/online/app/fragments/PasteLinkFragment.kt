@@ -9,12 +9,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.ashudevs.facebookurlextractor.FacebookExtractor
 import com.ashudevs.facebookurlextractor.FacebookFile
 import com.find.lost.app.phone.utils.InternetConnection
+import com.find.lost.app.phone.utils.SharedPrefUtils
+import com.google.android.gms.ads.AdListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.htetznaing.lowcostvideo.LowCostVideo
@@ -25,6 +29,7 @@ import com.video.downloading.app.downloader.online.app.utils.Constants.QUERY
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import com.video.downloading.app.downloader.online.app.utils.DailyMotionDownloadLink
 import com.video.downloading.app.downloader.online.app.utils.ViemoDownloadLink
+import kotlinx.android.synthetic.main.banner.view.*
 import kotlinx.android.synthetic.main.fragment_paste_link.view.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -54,51 +59,27 @@ class PasteLinkFragment : BaseFragment() {
             if (urlText!!.text!!.isEmpty()) {
                 showToast(getString(R.string.fill_the_field))
             } else if (InternetConnection().checkConnection(requireActivity())) {
-                if (!URLUtil.isValidUrl(urlText!!.text.toString())) {
-                    showToast(getString(R.string.valid_url))
-                } else if (urlText!!.text.toString().contains("https://video.f")) {
-                    val handler = Handler()
-                    showDialog(getString(R.string.generate_download_link))
-                    handler.postDelayed({
-                        hideDialog()
-                        downloadVideo("Facebook_$rnds", urlText!!.text.toString())
-                    }, 3000)
-                } else if (urlText!!.text.toString().contains("https://www.facebook.com/")) {
-                    extractFbDownloadLink()
-                } else if (urlText!!.text.toString().contains("https://www.dailymotion.com/")) {
-                    val homeFragment = HomeFragment()
-                    val split: Array<String> =
-                        urlText!!.text.toString().split("\\?".toRegex()).toTypedArray()
-                    DailyMotionDownloadLink(
-                        split[0],
-                        requireActivity(),
-                        homeFragment,
-                        false,
-                        this@PasteLinkFragment
-                    ).execute()
-                } else if (urlText!!.text.toString().contains("https://vimeo.com/")) {
-                    showDialog(getString(R.string.generate_download_link))
-                    val viemoLink = ViemoDownloadLink().getVideoLink(urlText!!.text.toString())
-                    hideDialog()
-                    downloadVideo("Vimeo_$rnds", viemoLink.toString())
-                } else if (urlText!!.text.toString().contains("https://twitter.com")) {
-                    if (urlText!!.text.toString().contains("\\?")) {
-                        val split: Array<String> =
-                            urlText!!.text.toString().split("\\?".toRegex()).toTypedArray()
-                        showDialog(getString(R.string.generate_download_link))
-                        xGetter!!.find(split[0])
-                    } else {
-                        showDialog(getString(R.string.generate_download_link))
-                        xGetter!!.find(urlText!!.text.toString())
-                    }
+                if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                    if (interstitial.isLoaded) {
+                        if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            interstitial.show()
+                        } else {
+                            Log.d(TAGI, "App Is In Background Ad Is Not Going To Show")
 
-                } else if (urlText!!.text.toString().contains("https://www.instagram.com")) {
-                    instagramLink()
+                        }
+                    } else {
+                        fetchDownloadLink()
+                    }
+                    interstitial.adListener = object : AdListener() {
+                        override fun onAdClosed() {
+                            requestNewInterstitial()
+                            fetchDownloadLink()
+                        }
+                    }
+                } else {
+                    fetchDownloadLink()
                 }
-                else{
-                    showDialog(getString(R.string.generate_download_link))
-                    xGetter!!.find(urlText!!.text.toString())
-                }
+
             } else {
                 showToast(getString(R.string.no_internet))
             }
@@ -123,7 +104,57 @@ class PasteLinkFragment : BaseFragment() {
                 hideDialog()
             }
         })
+
+        loadInterstial()
+        adView(root!!.adView)
         return root!!
+    }
+
+    private fun fetchDownloadLink() {
+        if (!URLUtil.isValidUrl(urlText!!.text.toString())) {
+            showToast(getString(R.string.valid_url))
+        } else if (urlText!!.text.toString().contains("https://video.f")) {
+            val handler = Handler()
+            showDialog(getString(R.string.generate_download_link))
+            handler.postDelayed({
+                hideDialog()
+                downloadVideo("Facebook_$rnds", urlText!!.text.toString())
+            }, 3000)
+        } else if (urlText!!.text.toString().contains("https://www.facebook.com/")) {
+            extractFbDownloadLink()
+        } else if (urlText!!.text.toString().contains("https://www.dailymotion.com/")) {
+            val homeFragment = HomeFragment()
+            val split: Array<String> =
+                urlText!!.text.toString().split("\\?".toRegex()).toTypedArray()
+            DailyMotionDownloadLink(
+                split[0],
+                requireActivity(),
+                homeFragment,
+                false,
+                this@PasteLinkFragment
+            ).execute()
+        } else if (urlText!!.text.toString().contains("https://vimeo.com/")) {
+            showDialog(getString(R.string.generate_download_link))
+            val viemoLink = ViemoDownloadLink().getVideoLink(urlText!!.text.toString())
+            hideDialog()
+            downloadVideo("Vimeo_$rnds", viemoLink.toString())
+        } else if (urlText!!.text.toString().contains("https://twitter.com")) {
+            if (urlText!!.text.toString().contains("\\?")) {
+                val split: Array<String> =
+                    urlText!!.text.toString().split("\\?".toRegex()).toTypedArray()
+                showDialog(getString(R.string.generate_download_link))
+                xGetter!!.find(split[0])
+            } else {
+                showDialog(getString(R.string.generate_download_link))
+                xGetter!!.find(urlText!!.text.toString())
+            }
+
+        } else if (urlText!!.text.toString().contains("https://www.instagram.com")) {
+            instagramLink()
+        } else {
+            showDialog(getString(R.string.generate_download_link))
+            xGetter!!.find(urlText!!.text.toString())
+        }
     }
 
     private fun instagramLink() {
@@ -215,7 +246,33 @@ class PasteLinkFragment : BaseFragment() {
             DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
-                        startDownload(url, name)
+
+                        if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                            hideDialog()
+                            if (interstitial.isLoaded) {
+                                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(
+                                        Lifecycle.State.STARTED
+                                    )
+                                ) {
+                                    interstitial.show()
+                                } else {
+                                    Log.d(TAGI, "App Is In Background Ad Is Not Going To Show")
+
+                                }
+                            } else {
+                                startDownload(url, name)
+                            }
+                            interstitial.adListener = object : AdListener() {
+                                override fun onAdClosed() {
+                                    requestNewInterstitial()
+                                    startDownload(url, name)
+                                }
+                            }
+                        } else {
+                            startDownload(url, name)
+
+                        }
+
                     }
 
 

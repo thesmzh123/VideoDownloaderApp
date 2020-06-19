@@ -11,6 +11,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -18,14 +19,23 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.find.lost.app.phone.utils.SharedPrefUtils
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.InterstitialAd
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textview.MaterialTextView
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.actvities.OtherVideosPlayer
 import com.video.downloading.app.downloader.online.app.fragments.DownloadFragment
 import com.video.downloading.app.downloader.online.app.models.DownloadFile
+import com.video.downloading.app.downloader.online.app.utils.Constants
+import kotlinx.android.synthetic.main.banner.view.*
 import kotlinx.android.synthetic.main.video_download_layout.view.*
 import java.io.File
 import java.text.DecimalFormat
@@ -44,6 +54,11 @@ class DownloadFileAdapter(
     private val units =
         arrayOf("B", "KB", "MB", "GB", "TB")
     private var totalSize: String? = null
+    private lateinit var interstitial: InterstitialAd
+
+    init {
+        loadInterstial()
+    }
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
@@ -107,12 +122,65 @@ class DownloadFileAdapter(
         holder.itemView.videosizee.text = totalSize
 
         holder.itemView.mainLayout.setOnClickListener {
-            val intent = Intent(context, OtherVideosPlayer::class.java)
-            intent.putExtra("videoUrl", downloadFile.filePath)
-            context.startActivity(intent)
+
+            if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                if (position >= 2) {
+                    if (position % 2 == 0) {
+                        if (interstitial.isLoaded) {
+                            if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(
+                                    Lifecycle.State.STARTED
+                                )
+                            ) {
+                                interstitial.show()
+                            } else {
+                                Log.d(
+                                    Constants.TAGI,
+                                    "App Is In Background Ad Is Not Going To Show"
+                                )
+
+                            }
+                        } else {
+                            val intent = Intent(context, OtherVideosPlayer::class.java)
+                            intent.putExtra("videoUrl", downloadFile.filePath)
+                            context.startActivity(intent)
+                        }
+                        interstitial.adListener = object : AdListener() {
+                            override fun onAdClosed() {
+                                requestNewInterstitial()
+                                val intent = Intent(context, OtherVideosPlayer::class.java)
+                                intent.putExtra("videoUrl", downloadFile.filePath)
+                                context.startActivity(intent)
+                            }
+                        }
+                    } else {
+                        val intent = Intent(context, OtherVideosPlayer::class.java)
+                        intent.putExtra("videoUrl", downloadFile.filePath)
+                        context.startActivity(intent)
+                    }
+                } else {
+                    val intent = Intent(context, OtherVideosPlayer::class.java)
+                    intent.putExtra("videoUrl", downloadFile.filePath)
+                    context.startActivity(intent)
+                }
+
+            } else {
+                val intent = Intent(context, OtherVideosPlayer::class.java)
+                intent.putExtra("videoUrl", downloadFile.filePath)
+                context.startActivity(intent)
+            }
         }
         holder.itemView.menu_op.setOnClickListener {
             showPopUp(it, position)
+        }
+
+        if (position >= 2) {
+            if (position % 2 == 0) {
+                adView(holder.itemView.adView)
+            } else {
+                holder.itemView.adView.visibility = View.GONE
+            }
+        } else {
+            holder.itemView.adView.visibility = View.GONE
         }
 
     }
@@ -125,7 +193,35 @@ class DownloadFileAdapter(
         popupMenu.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.deleteop -> {
-                    deleteFile(position)
+                    if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                        if (interstitial.isLoaded) {
+                            if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(
+                                    Lifecycle.State.STARTED
+                                )
+                            ) {
+                                interstitial.show()
+                            } else {
+                                Log.d(
+                                    Constants.TAGI,
+                                    "App Is In Background Ad Is Not Going To Show"
+                                )
+
+                            }
+                        } else {
+                            deleteFile(position)
+
+                        }
+                        interstitial.adListener = object : AdListener() {
+                            override fun onAdClosed() {
+                                requestNewInterstitial()
+                                deleteFile(position)
+
+                            }
+                        }
+                    } else {
+                        deleteFile(position)
+
+                    }
                     return@setOnMenuItemClickListener true
                 }
                 R.id.shareop -> {
@@ -133,7 +229,35 @@ class DownloadFileAdapter(
                     return@setOnMenuItemClickListener true
                 }
                 R.id.detailsop -> {
-                    detailOfFile(position)
+                    if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                        if (interstitial.isLoaded) {
+                            if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(
+                                    Lifecycle.State.STARTED
+                                )
+                            ) {
+                                interstitial.show()
+                            } else {
+                                Log.d(
+                                    Constants.TAGI,
+                                    "App Is In Background Ad Is Not Going To Show"
+                                )
+
+                            }
+                        } else {
+                            detailOfFile(position)
+
+                        }
+                        interstitial.adListener = object : AdListener() {
+                            override fun onAdClosed() {
+                                requestNewInterstitial()
+                                detailOfFile(position)
+
+                            }
+                        }
+                    } else {
+                        detailOfFile(position)
+                    }
+
                     return@setOnMenuItemClickListener true
                 }
                 else -> false
@@ -196,7 +320,7 @@ class DownloadFileAdapter(
 
     @SuppressLint("SetTextI18n")
     private fun detailOfFile(position: Int) {
-        val recording= downloadFileList[position]
+        val recording = downloadFileList[position]
         val path: String = recording.filePath
         val file = File(path)
         val fileName = file.name
@@ -234,5 +358,62 @@ class DownloadFileAdapter(
         alertDialog2.getButton(AlertDialog.BUTTON_POSITIVE)
             .setOnClickListener { v: View? -> alertDialog2.dismiss() }
         alertDialogBuilderUserInput.setOnCancelListener { dialogInterface: DialogInterface? -> alertDialog2.dismiss() }
+    }
+
+    //TODO: banner
+    private fun adView(adView: AdView) {
+//        adView.visibility = View.GONE
+        try {
+            if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                val adRequest = AdRequest.Builder().build()
+                adView.loadAd(adRequest)
+                adView.adListener = object : AdListener() {
+
+                    override fun onAdLoaded() {
+                        adView.visibility = View.VISIBLE
+                    }
+
+                    override fun onAdFailedToLoad(error: Int) {
+                        adView.visibility = View.GONE
+                    }
+
+                }
+            } else {
+                adView.visibility = View.GONE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //TODO: load interstial
+    private fun loadInterstial() {
+        try {
+
+            Log.d(Constants.TAGI, "load ads")
+            if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                interstitial = InterstitialAd(context)
+                interstitial.adUnitId = context.getString(R.string.interstitial)
+                try {
+                    if (!interstitial.isLoading && !interstitial.isLoaded) {
+                        val adRequest = AdRequest.Builder().build()
+                        interstitial.loadAd(adRequest)
+                    }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    Log.d(Constants.TAGI, "error: " + ex.message)
+                }
+
+                requestNewInterstitial()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //TODO: requestNewInterstitial
+    fun requestNewInterstitial() {
+        val adRequest = AdRequest.Builder().build()
+        interstitial.loadAd(adRequest)
     }
 }

@@ -4,15 +4,24 @@ import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.find.lost.app.phone.utils.SharedPrefUtils
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.InterstitialAd
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.utils.Constants
+import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import com.video.downloading.app.downloader.online.app.utils.DatabaseHelper
 import kotlinx.android.synthetic.main.layout_loading_dialog.view.*
+import kotlinx.android.synthetic.main.twitter_guide_layout.view.*
 import java.io.File
 
 @Suppress("DEPRECATION")
@@ -21,6 +30,64 @@ open class BaseFragment : Fragment() {
     private var dialog: AlertDialog? = null
     var databaseHelper: DatabaseHelper? = null
     private val downloadedList = ArrayList<String>()
+    lateinit var interstitial: InterstitialAd
+
+    //TODO: banner
+    fun adView(adView: AdView) {
+//        adView.visibility = View.GONE
+        try {
+            if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                val adRequest = AdRequest.Builder().build()
+                adView.loadAd(adRequest)
+                adView.adListener = object : AdListener() {
+
+                    override fun onAdLoaded() {
+                        adView.visibility = View.VISIBLE
+                    }
+
+                    override fun onAdFailedToLoad(error: Int) {
+                        adView.visibility = View.GONE
+                    }
+
+                }
+            } else {
+                adView.visibility = View.GONE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //TODO: load interstial
+    fun loadInterstial() {
+        try {
+
+            Log.d(TAGI, "load ads")
+            if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                interstitial = InterstitialAd(requireActivity())
+                interstitial.adUnitId = getString(R.string.interstitial)
+                try {
+                    if (!interstitial.isLoading && !interstitial.isLoaded) {
+                        val adRequest = AdRequest.Builder().build()
+                        interstitial.loadAd(adRequest)
+                    }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    Log.d(TAGI, "error: " + ex.message)
+                }
+
+                requestNewInterstitial()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //TODO: requestNewInterstitial
+    fun requestNewInterstitial() {
+        val adRequest = AdRequest.Builder().build()
+        interstitial.loadAd(adRequest)
+    }
 
     fun showToast(message: String) {
         Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
@@ -92,4 +159,27 @@ open class BaseFragment : Fragment() {
         return downloadedList
     }
 
+    fun guideDialog(isTwitter: Boolean) {
+        val factory = LayoutInflater.from(requireActivity())
+        @SuppressLint("InflateParams") val deleteDialogView: View =
+            factory.inflate(R.layout.twitter_guide_layout, null)
+        val deleteDialog: AlertDialog = MaterialAlertDialogBuilder(requireActivity()).create()
+        deleteDialog.setView(deleteDialogView)
+        deleteDialog.setCancelable(false)
+        if (isTwitter) {
+            deleteDialogView.gif1.visibility = View.VISIBLE
+        }
+        deleteDialog.setButton(
+            AlertDialog.BUTTON_POSITIVE,
+            getString(R.string.ok)
+        ) { dialog, which -> // here you can add functions
+            if (isTwitter) {
+                SharedPrefUtils.saveData(requireActivity(), "isTwitter", true)
+            } else {
+                SharedPrefUtils.saveData(requireActivity(), "isFacebook", true)
+            }
+        }
+
+        deleteDialog.show()
+    }
 }

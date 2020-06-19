@@ -7,8 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.fragment.findNavController
 import com.find.lost.app.phone.utils.InternetConnection
+import com.find.lost.app.phone.utils.SharedPrefUtils
+import com.google.android.gms.ads.AdListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.adapters.BookmarkAdapter
@@ -32,7 +36,7 @@ class BookmarkFragment : BaseFragment() {
         databaseHelper = DatabaseHelper(requireActivity())
         bookmarkList = databaseHelper!!.getAllBookmarks()
         //creating our adapter
-        val adapter = BookmarkAdapter(bookmarkList!!)
+        val adapter = BookmarkAdapter(requireActivity(),bookmarkList!!)
 
         //now adding the adapter to recyclerview
         root!!.recyclerView.adapter = adapter
@@ -45,8 +49,33 @@ class BookmarkFragment : BaseFragment() {
                     override fun onClick(view: View?, position: Int) {
                         val websites = bookmarkList!![position]
                         if (InternetConnection().checkConnection(requireActivity())) {
-                            val bundle = bundleOf("webAddress" to websites.address)
-                            findNavController().navigate(R.id.navigation_home, bundle)
+
+                            if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                                if (interstitial.isLoaded) {
+                                    if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                                        interstitial.show()
+                                    } else {
+                                        Log.d(Constants.TAGI, "App Is In Background Ad Is Not Going To Show")
+
+                                    }
+                                } else {
+                                    val bundle = bundleOf("webAddress" to websites.address)
+                                    findNavController().navigate(R.id.navigation_home, bundle)
+
+                                }
+                                interstitial.adListener = object : AdListener() {
+                                    override fun onAdClosed() {
+                                        requestNewInterstitial()
+                                        val bundle = bundleOf("webAddress" to websites.address)
+                                        findNavController().navigate(R.id.navigation_home, bundle)
+
+                                    }
+                                }
+                            } else {
+                                val bundle = bundleOf("webAddress" to websites.address)
+                                findNavController().navigate(R.id.navigation_home, bundle)
+
+                            }
                         } else {
                             showToast(getString(R.string.no_internet))
                         }
@@ -55,42 +84,69 @@ class BookmarkFragment : BaseFragment() {
 
                     override fun onLongClick(view: View?, position: Int) {
                         Log.d(Constants.TAGI, "onLongClick")
-                        val yesNoDialog =
-                            MaterialAlertDialogBuilder(
-                                requireActivity()
-                            )
-                        //yes or no alert box
-                        yesNoDialog.setMessage(context?.getString(R.string.delete_this_bookmark))
-                            .setCancelable(false)
-                            .setNegativeButton(
-                                context?.getString(R.string.no)
-                            ) { dialog: DialogInterface?, which: Int ->
-                                dialog?.dismiss()
+                        if (!SharedPrefUtils.getBooleanData(requireActivity(), "hideAds")) {
+                            if (interstitial.isLoaded) {
+                                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(
+                                        Lifecycle.State.STARTED)) {
+                                    interstitial.show()
+                                } else {
+                                    Log.d(Constants.TAGI, "App Is In Background Ad Is Not Going To Show")
+
+                                }
+                            } else {
+                                deleteBookmark(position, adapter)
+
                             }
-                            .setPositiveButton(
-                                context?.getString(R.string.yes)
-                            ) { dialogInterface: DialogInterface?, i: Int ->
-                                try {
-                                    val websites = bookmarkList!![position]
-                                    databaseHelper!!.deletebookmark(websites.id)
-                                    bookmarkList!!.removeAt(position)
-                                    adapter.notifyItemChanged(position)
-                                    adapter.notifyItemRangeRemoved(0, bookmarkList!!.size)
-                                    checkEmptyState()
-                                    dialogInterface!!.dismiss()
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                            interstitial.adListener = object : AdListener() {
+                                override fun onAdClosed() {
+                                    requestNewInterstitial()
+                                    deleteBookmark(position, adapter)
+
                                 }
                             }
+                        } else {
+                            deleteBookmark(position, adapter)
 
-                        val dialog = yesNoDialog.create()
-                        dialog.show()
+                        }
 
                     }
                 })
         )
-
+        loadInterstial()
         return root!!
+    }
+
+    private fun deleteBookmark(position: Int, adapter: BookmarkAdapter) {
+        val yesNoDialog =
+            MaterialAlertDialogBuilder(
+                requireActivity()
+            )
+        //yes or no alert box
+        yesNoDialog.setMessage(getString(R.string.delete_this_bookmark))
+            .setCancelable(false)
+            .setNegativeButton(
+                getString(R.string.no)
+            ) { dialog: DialogInterface?, which: Int ->
+                dialog?.dismiss()
+            }
+            .setPositiveButton(
+                getString(R.string.yes)
+            ) { dialogInterface: DialogInterface?, i: Int ->
+                try {
+                    val websites = bookmarkList!![position]
+                    databaseHelper!!.deletebookmark(websites.id)
+                    bookmarkList!!.removeAt(position)
+                    adapter.notifyItemChanged(position)
+                    adapter.notifyItemRangeRemoved(0, bookmarkList!!.size)
+                    checkEmptyState()
+                    dialogInterface!!.dismiss()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+        val dialog = yesNoDialog.create()
+        dialog.show()
     }
 
     private fun checkEmptyState() {

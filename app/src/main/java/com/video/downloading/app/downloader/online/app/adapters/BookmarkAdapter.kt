@@ -7,12 +7,17 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
+import com.find.lost.app.phone.utils.SharedPrefUtils
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.models.Bookmarks
+import kotlinx.android.synthetic.main.banner.view.*
 import kotlinx.android.synthetic.main.bookmark_layout.view.*
 
 
-class BookmarkAdapter(val bookmarksList: ArrayList<Bookmarks>) :
+class BookmarkAdapter(val context: Context, private val bookmarksList: ArrayList<Bookmarks>) :
     RecyclerView.Adapter<BookmarkAdapter.MyViewHolder>() {
     private val mColorGenerator = ColorGenerator.DEFAULT
     private var mDrawableBuilder: TextDrawable? = null
@@ -33,7 +38,7 @@ class BookmarkAdapter(val bookmarksList: ArrayList<Bookmarks>) :
         val websites = bookmarksList[position]
         var letter: String? = null
         holder.itemView.recycle_title.text = websites.title
-        if (!websites.title.isEmpty()) {
+        if (websites.title.isNotEmpty()) {
             letter = websites.title.substring(0, 1)
         }
 
@@ -43,5 +48,41 @@ class BookmarkAdapter(val bookmarksList: ArrayList<Bookmarks>) :
         mDrawableBuilder = TextDrawable.builder()
             .buildRound(letter, color)
         holder.itemView.thumbnail_image.setImageDrawable(mDrawableBuilder)
+
+        if (position >= 2) {
+            if (position % 2 == 0) {
+                adView(holder.itemView.adView)
+            } else {
+                holder.itemView.adView.visibility = View.GONE
+            }
+        } else {
+            holder.itemView.adView.visibility = View.GONE
+        }
     }
+
+    private fun adView(adView: AdView) {
+//        adView.visibility = View.GONE
+        try {
+            if (!SharedPrefUtils.getBooleanData(context, "hideAds")) {
+                val adRequest = AdRequest.Builder().build()
+                adView.loadAd(adRequest)
+                adView.adListener = object : AdListener() {
+
+                    override fun onAdLoaded() {
+                        adView.visibility = View.VISIBLE
+                    }
+
+                    override fun onAdFailedToLoad(error: Int) {
+                        adView.visibility = View.GONE
+                    }
+
+                }
+            } else {
+                adView.visibility = View.GONE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 }

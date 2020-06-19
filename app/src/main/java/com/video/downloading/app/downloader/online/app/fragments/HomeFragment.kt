@@ -27,6 +27,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.charizardtech.social.media.downloader.app.utils.VideoContentSearch
 import com.find.lost.app.phone.utils.InternetConnection
+import com.find.lost.app.phone.utils.SharedPrefUtils
 import com.find.your.phone.app.utils.PermissionsUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -75,7 +76,7 @@ class HomeFragment : BaseFragment() {
     private var xGetter: LowCostVideo? = null
     private var rnds: String?=null
 
-    @SuppressLint("StaticFieldLeak")
+    @SuppressLint("StaticFieldLeak", "SimpleDateFormat")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -607,6 +608,11 @@ class HomeFragment : BaseFragment() {
                 // Don't use the argument url here since navigation to that URL might have been
                 // cancelled due to SSL error
 
+                if (view.url.contains("https://mobile.twitter.com")){
+                    if (!SharedPrefUtils.getBooleanData(requireActivity(),"isTwitter")){
+                        guideDialog(true)
+                    }
+                }
                 if (view.url.contains("https://m.facebook.com/")) {
                     root!!.fab.visibility = View.GONE
                     val handler = Handler()
@@ -666,7 +672,7 @@ class HomeFragment : BaseFragment() {
                                                             page.contains("https://mobile.twitter.com") -> {
 
                                                                 val activity = requireActivity()
-                                                                if (activity != null && isAdded()) {
+                                                                if (activity != null && isAdded) {
                                                                     val clipBoard =
                                                                         requireActivity().getSystemService(
                                                                             CLIPBOARD_SERVICE
