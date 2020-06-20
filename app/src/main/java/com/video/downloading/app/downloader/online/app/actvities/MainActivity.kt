@@ -14,7 +14,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.find.lost.app.phone.utils.SharedPrefUtils
-import com.find.your.phone.app.utils.PermissionsUtils
+import com.video.downloading.app.downloader.online.app.utils.PermissionsUtils
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 
@@ -33,6 +33,15 @@ class MainActivity : AppCompatActivity() {
             finish()
 
         } else {
+            if (Build.VERSION.SDK_INT >= 23) {
+                val permissionsUtils = PermissionsUtils().getInstance(this)
+                if (permissionsUtils?.isAllPermissionAvailable()!!) {
+                    Log.d("Test", "Permission")
+                } else {
+                    permissionsUtils.setActivity(this)
+                    permissionsUtils.requestPermissionsIfDenied()
+                }
+            }
             val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
             navController = findNavController(R.id.nav_host_fragment)
@@ -47,15 +56,7 @@ class MainActivity : AppCompatActivity() {
             )
             setupActionBarWithNavController(navController, appBarConfiguration)
             navView.setupWithNavController(navController)
-            if (Build.VERSION.SDK_INT >= 23) {
-                val permissionsUtils = PermissionsUtils().getInstance(this)
-                if (permissionsUtils?.isAllPermissionAvailable()!!) {
-                    Log.d(TAGI, "Permission")
-                } else {
-                    permissionsUtils.setActivity(this)
-                    permissionsUtils.requestPermissionsIfDenied()
-                }
-            }
+
         }
     }
 

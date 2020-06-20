@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_ANONYMOUS_PARAMETER")
+
 package com.video.downloading.app.downloader.online.app.fragments
 
 import android.annotation.SuppressLint

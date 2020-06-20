@@ -22,6 +22,8 @@ import android.widget.TextView;
 
 import com.video.downloading.app.downloader.online.app.R;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.ref.WeakReference;
 import java.util.Formatter;
 import java.util.Locale;
@@ -54,17 +56,13 @@ public class VideoControllerView extends FrameLayout {
     private ImageView mPrevButton;
     private ImageView mFullscreenButton;
     private Handler mHandler = new MessageHandler(this);
-    private OnClickListener mPauseListener = new OnClickListener() {
-        public void onClick(View v) {
-            doPauseResume();
-            show(sDefaultTimeout);
-        }
+    private OnClickListener mPauseListener = v -> {
+        doPauseResume();
+        show(sDefaultTimeout);
     };
-    private OnClickListener mFullscreenListener = new OnClickListener() {
-        public void onClick(View v) {
-            doToggleFullscreen();
-            show(sDefaultTimeout);
-        }
+    private OnClickListener mFullscreenListener = v -> {
+        doToggleFullscreen();
+        show(sDefaultTimeout);
     };
     // There are two scenarios that can trigger the seekbar listener to trigger:
     //
@@ -351,10 +349,10 @@ public class VideoControllerView extends FrameLayout {
         }
     }
 
-    public boolean isShowing() {
+ /*   public boolean isShowing() {
         return mShowing;
     }
-
+*/
     /**
      * Remove the controller from the screen.
      */
@@ -412,6 +410,7 @@ public class VideoControllerView extends FrameLayout {
         return position;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         show(sDefaultTimeout);
@@ -559,7 +558,7 @@ public class VideoControllerView extends FrameLayout {
         }
     }
 
-    public void setPrevNextListeners(OnClickListener next,OnClickListener prev) {
+  /*  public void setPrevNextListeners(OnClickListener next,OnClickListener prev) {
         mNextListener = next;
         mPrevListener = prev;
         mListenersSet = true;
@@ -574,7 +573,7 @@ public class VideoControllerView extends FrameLayout {
                 mPrevButton.setVisibility(View.VISIBLE);
             }
         }
-    }
+    }*/
 
     public interface MediaPlayerControl {
         void start();
@@ -608,11 +607,11 @@ public class VideoControllerView extends FrameLayout {
         private final WeakReference<VideoControllerView> mView;
 
         MessageHandler(VideoControllerView view) {
-            mView = new WeakReference<VideoControllerView>(view);
+            mView = new WeakReference<>(view);
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NotNull Message msg) {
             VideoControllerView view = mView.get();
             if (view == null || view.mPlayer == null) {
                 return;

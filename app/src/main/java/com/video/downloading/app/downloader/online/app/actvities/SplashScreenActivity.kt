@@ -1,14 +1,15 @@
 package com.video.downloading.app.downloader.online.app.actvities
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.Window
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import com.find.lost.app.phone.utils.SharedPrefUtils
 import com.video.downloading.app.downloader.online.app.R
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
+import kotlinx.android.synthetic.main.activity_splash_screen.*
 
 class SplashScreenActivity : BaseActivity() {
 
@@ -21,6 +22,13 @@ class SplashScreenActivity : BaseActivity() {
         )
         setContentView(R.layout.activity_splash_screen)
 
+        val animation = AnimationUtils.loadAnimation(this, R.anim.transition)
+        val animationText = AnimationUtils.loadAnimation(this, R.anim.transition_text)
+        // assigning animations to the widgets
+        splashImage.startAnimation(animation)
+        splashText.startAnimation(animation)
+        splashText2.startAnimation(animationText)
+        loadInterstial()
 
     }
 
@@ -31,19 +39,18 @@ class SplashScreenActivity : BaseActivity() {
             // This method will be executed once the timer is over
             // Start your app main activity
 
-            startNewActivtySplash(MainActivity())
+            if (!SharedPrefUtils.getBooleanData(this, "isFirst")) {
+                startNewActivty(MainActivity())
+            } else {
+                startNewActivtyAds(MainActivity())
+            }
         }, 3000)
     }
 
     override fun onBackPressed() {
-        this@SplashScreenActivity.finish()
+        finish()
 
     }
-    //TODO: start activity splash
 
-    private fun startNewActivtySplash(activity: Activity) {
-        startActivity(Intent(applicationContext, activity.javaClass))
-        this@SplashScreenActivity.finish()
-    }
 
 }

@@ -13,27 +13,38 @@
         android:orientation="vertical"
         tools:ignore="UselessParent">
 
+        <ImageView
+            android:id="@+id/splashImage"
+            android:layout_width="@dimen/_60sdp"
+            android:layout_height="@dimen/_60sdp"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/icon" />
 
         <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/splashText"
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="10dp"
             android:layout_marginTop="@dimen/_5sdp"
             android:text="@string/app_name"
-            android:textStyle="bold"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/_18ssp" />
+            android:textSize="@dimen/_18ssp"
+            android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/splashText2"
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/quickest_video_downloader_for_anyone"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_14ssp" />
-
 
 
     </LinearLayout>

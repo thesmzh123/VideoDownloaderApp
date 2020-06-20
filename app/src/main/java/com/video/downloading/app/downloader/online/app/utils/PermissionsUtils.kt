@@ -1,13 +1,16 @@
-package com.find.your.phone.app.utils
+@file:Suppress("UNUSED_ANONYMOUS_PARAMETER")
 
-import android.Manifest.permission.*
+package com.video.downloading.app.downloader.online.app.utils
+
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
 import java.util.*
 
@@ -126,13 +129,14 @@ class PermissionsUtils {
     }*/
 
     private fun showMessageOKCancel(message: String, okListener: DialogInterface.OnClickListener) {
-        AlertDialog.Builder(activity)
+        MaterialAlertDialogBuilder(activity)
             .setMessage(message)
             .setPositiveButton(R.string.ok, okListener)
             .setNegativeButton(
                 R.string.cancel
             ) { dialogInterface, i ->
                 Log.d("test", "ok")
+                activity!!.finish()
                 dialogInterface.dismiss()
             }
             .create()

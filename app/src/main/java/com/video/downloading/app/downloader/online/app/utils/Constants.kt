@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.video.downloading.app.downloader.online.app.utils
 
 import android.os.Environment

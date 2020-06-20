@@ -11,6 +11,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
+@Suppress("UNUSED_ANONYMOUS_PARAMETER", "PrivatePropertyName")
 class HttpsTrustManager : X509TrustManager {
     private var trustManagers: Array<TrustManager>? = null
     private val _AcceptedIssuers =

@@ -29,7 +29,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.charizardtech.social.media.downloader.app.utils.VideoContentSearch
 import com.find.lost.app.phone.utils.InternetConnection
 import com.find.lost.app.phone.utils.SharedPrefUtils
-import com.find.your.phone.app.utils.PermissionsUtils
+import com.video.downloading.app.downloader.online.app.utils.PermissionsUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.htetznaing.lowcostvideo.LowCostVideo
