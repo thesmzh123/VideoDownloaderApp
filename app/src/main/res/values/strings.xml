@@ -66,7 +66,7 @@
     <string name="exit">Exit</string>
     <string name="rate_us">Rate Us</string>
     <string name="agree">I have read and accept the <u>Terms and Conditions</u>.</string>
-    <string name="termsandc"><u>Terms and Condiditions</u></string>
+    <string name="termsandc"><u>Terms and Conditions</u></string>
 
     <string name="termpara">Our product i.e (All Video Downloader) asks user to grant certain permissions . This access is used by the application in the following ways:\n\n
         \n1. Use storage permission to store the downloaded video.\n
