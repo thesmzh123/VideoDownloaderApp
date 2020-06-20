@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--test ads-->
-    <string name="app_id">ca-app-pub-3940256099942544~3347511713</string>
+<!--    <string name="app_id">ca-app-pub-3940256099942544~3347511713</string>
     <string name="interstitial">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="banner">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="banner">ca-app-pub-3940256099942544/6300978111</string>  -->
+
+
+    <!--real ads-->
+    <string name="app_id">ca-app-pub-3785449751039492~8242421791</string>
+    <string name="interstitial">ca-app-pub-3785449751039492/6654486889</string>
+    <string name="banner">ca-app-pub-3785449751039492/6371415851</string>
 
     <string-array name="videourl_filters">
         <item>mp4</item>
