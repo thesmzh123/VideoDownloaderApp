@@ -21,7 +21,6 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.InterstitialAd
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.video.downloading.app.downloader.online.app.R
-import com.video.downloading.app.downloader.online.app.utils.Constants
 import com.video.downloading.app.downloader.online.app.utils.Constants.DOWNLOAD_PATH
 import com.video.downloading.app.downloader.online.app.utils.Constants.TAGI
 import com.video.downloading.app.downloader.online.app.utils.DatabaseHelper
