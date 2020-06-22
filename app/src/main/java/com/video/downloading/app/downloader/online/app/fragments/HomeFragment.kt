@@ -524,12 +524,12 @@ class HomeFragment : BaseFragment() {
             .setNegativeButton(
                 getString(R.string.rate_us)
             ) { dialog: DialogInterface?, which: Int ->
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=" + requireActivity().packageName)
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://play.google.com/store/apps/details?id=" + requireActivity().packageName)
+                        )
                     )
-                )
             }
             .setPositiveButton(
                 getString(R.string.exit)
