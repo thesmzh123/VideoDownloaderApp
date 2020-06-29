@@ -72,4 +72,5 @@ class DownloadFragment : BaseFragment() {
             root!!.emptyView.visibility = View.GONE
         }
     }
+
 }
